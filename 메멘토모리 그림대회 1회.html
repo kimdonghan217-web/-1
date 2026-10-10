@@ -1,0 +1,598 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>메멘토 모리 갤러리 - 그림대회 1회</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --rose: #b98d87;
+      --rose-border: #e5c8c0;
+      --rose-dark: #69424b;
+      --gold: #c6a17e;
+      --ink: #634640;
+    }
+
+    html {
+      min-height: 100%;
+      background: #f8eeeb;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Gowun Batang", "Noto Serif KR", serif;
+      color: var(--ink);
+      background: #f8eeeb;
+    }
+
+    .page {
+      position: relative;
+      isolation: isolate;
+      width: 100%;
+      max-width: 650px;
+      height: 100vh;
+      height: 100svh;
+      min-height: 420px;
+      margin: 0 auto;
+      overflow: hidden;
+      background: #f8e5e4;
+    }
+
+    /* 배경 이미지 */
+    .background {
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      pointer-events: none;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: rgba(255, 247, 246, 0.04);
+      pointer-events: none;
+    }
+
+    /* 하단 신청 폼 */
+    .form-wrap {
+      position: absolute;
+      left: 50%;
+      bottom: 4%;
+      transform: translateX(-50%);
+      width: 76%;
+      max-width: 430px;
+    }
+
+    .form-card {
+      position: relative;
+      width: 100%;
+      padding: 12px 12px 14px;
+      border: 1px solid rgba(202, 159, 139, 0.9);
+      background: rgba(255, 249, 246, 0.76);
+      box-shadow: 0 4px 18px rgba(100, 59, 55, 0.09);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+
+    /* 모서리의 작은 장식 */
+    .form-card::before,
+    .form-card::after {
+      position: absolute;
+      color: var(--gold);
+      font-size: 17px;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .form-card::before {
+      content: "✧";
+      top: 4px;
+      left: 5px;
+    }
+
+    .form-card::after {
+      content: "✧";
+      right: 5px;
+      bottom: 4px;
+    }
+
+    /* 공통 입력 행 */
+    .field-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-width: 0;
+      height: 29px;
+      margin-bottom: 7px;
+      padding: 0 9px;
+      gap: 8px;
+      border: 1px solid var(--rose-border);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.55);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .field-row:focus-within {
+      border-color: var(--rose);
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .field-icon {
+      flex-shrink: 0;
+      width: 13px;
+      height: 13px;
+      color: #b8897f;
+    }
+
+    /* 파일 선택 */
+    .file-button {
+      flex-shrink: 0;
+      padding: 3px 6px;
+      border: 1px solid #dfc3bb;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.7);
+      color: #75534c;
+      font-family: inherit;
+      font-size: 9px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .file-button:hover {
+      background: #f5e6e1;
+    }
+
+    #artwork {
+      display: none;
+    }
+
+    #fileName {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      color: #9c8178;
+      font-size: 9px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* 작품명 / 연락처 */
+    .field {
+      flex: 1;
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 10px;
+    }
+
+    .field::placeholder {
+      color: #aa9189;
+      opacity: 1;
+    }
+
+    /* 이미지 미리보기 */
+    .preview-wrap {
+      display: none;
+      position: relative;
+      width: 100%;
+      margin: 0 0 8px;
+      padding: 5px;
+      border: 1px solid var(--rose-border);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.6);
+      text-align: center;
+    }
+
+    #preview {
+      display: block;
+      width: 100%;
+      max-height: 110px;
+      object-fit: contain;
+    }
+
+    .remove-preview {
+      margin-top: 4px;
+      padding: 3px 8px;
+      border: 1px solid var(--rose-border);
+      border-radius: 10px;
+      background: #fff9f6;
+      color: var(--rose-dark);
+      font-family: inherit;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    /* 참가 신청 버튼 */
+    .submit {
+      position: relative;
+      display: block;
+      width: 100%;
+      min-height: 35px;
+      margin-top: 11px;
+      padding: 6px 15px;
+      border: 1px solid #c6a17e;
+      border-radius: 3px;
+      outline: 1px solid rgba(198, 161, 126, 0.55);
+      outline-offset: -4px;
+      background: linear-gradient(
+        110deg,
+        #6d4950,
+        #3f2d3a 50%,
+        #6d4950
+      );
+      box-shadow: 0 3px 8px rgba(73, 44, 49, 0.15);
+      color: #fff5ef;
+      font-family: "Gowun Batang", serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: filter 0.2s, transform 0.2s;
+    }
+
+    .submit::before,
+    .submit::after {
+      position: absolute;
+      top: 50%;
+      color: #e3c39e;
+      font-size: 18px;
+      transform: translateY(-50%);
+    }
+
+    .submit::before {
+      content: "❖";
+      left: -5px;
+    }
+
+    .submit::after {
+      content: "❖";
+      right: -5px;
+    }
+
+    .submit:hover {
+      filter: brightness(1.12);
+    }
+
+    .submit:active {
+      transform: scale(0.99);
+    }
+
+    .submit:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    /* 제출 완료 */
+    .success {
+      display: none;
+      min-height: 130px;
+      padding: 15px 5px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      text-align: center;
+      color: var(--rose-dark);
+    }
+
+    .success-icon {
+      color: var(--gold);
+      font-size: 25px;
+    }
+
+    .success h2 {
+      margin: 0;
+      font-size: clamp(17px, 4vw, 23px);
+    }
+
+    .success p {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 360px) {
+      .form-wrap {
+        width: 76%;
+        bottom: 4%;
+      }
+
+      .form-card {
+        padding: 10px 9px 12px;
+      }
+
+      .field-row {
+        height: 27px;
+        gap: 6px;
+        padding: 0 7px;
+      }
+
+      .submit {
+        min-height: 33px;
+        font-size: 12px;
+      }
+    }
+
+    @media (min-width: 500px) {
+      .form-wrap {
+        width: 76%;
+        bottom: 5%;
+      }
+
+      .form-card {
+        padding: 16px 18px 18px;
+      }
+
+      .field-row {
+        height: 38px;
+        margin-bottom: 9px;
+      }
+
+      .field {
+        font-size: 13px;
+      }
+
+      .field-icon {
+        width: 16px;
+        height: 16px;
+      }
+
+      .file-button,
+      #fileName {
+        font-size: 11px;
+      }
+
+      .submit {
+        min-height: 44px;
+        font-size: 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+
+    <!-- 기존 배경 이미지 -->
+    <img
+      class="background"
+      src="https://i.postimg.cc/pVDtWVnj/geulimdaehoe-1cha-sian.jpg"
+      alt=""
+    >
+
+    <div class="overlay"></div>
+
+    <div class="form-wrap">
+      <form id="entryForm">
+        <section class="form-card">
+
+          <!-- 이미지 업로드 -->
+          <div class="field-row">
+
+            <svg class="field-icon" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="1.5" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21v-2a8 8 0 0 1 16 0v2"></path>
+            </svg>
+
+            <button
+              class="file-button"
+              id="chooseFile"
+              type="button"
+            >
+              파일 선택
+            </button>
+
+            <span id="fileName">선택된 파일 없음</span>
+
+            <input
+              id="artwork"
+              name="artwork"
+              type="file"
+              accept="image/*"
+              required
+            >
+          </div>
+
+          <!-- 선택한 이미지 미리보기 -->
+          <div class="preview-wrap" id="previewWrap">
+            <img id="preview" alt="선택한 작품 미리보기">
+            <button
+              class="remove-preview"
+              id="removePreview"
+              type="button"
+            >
+              이미지 다시 선택
+            </button>
+          </div>
+
+          <!-- 작품명 -->
+          <label class="field-row">
+
+            <svg class="field-icon" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="1.5" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <path d="m21 15-5-5L5 21"></path>
+            </svg>
+
+            <input
+              class="field"
+              id="title"
+              name="title"
+              type="text"
+              placeholder="작품명을 입력해주세요"
+              maxlength="100"
+              autocomplete="off"
+              required
+            >
+          </label>
+
+          <!-- 연락처 -->
+          <label class="field-row">
+
+            <svg class="field-icon" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="1.5" aria-hidden="true">
+              <path d="m14 6 4 4"></path>
+              <path d="M4 20 5 15 16 4a2.8 2.8 0 0 1 4 4L9 19Z"></path>
+            </svg>
+
+            <input
+              class="field"
+              id="contact"
+              name="contact"
+              type="text"
+              placeholder="연락처를 입력해주세요"
+              maxlength="100"
+              autocomplete="off"
+              required
+            >
+          </label>
+
+          <!-- 참가 신청 -->
+          <button class="submit" id="submitButton" type="submit">
+            참가 신청하기
+          </button>
+
+        </section>
+      </form>
+
+      <!-- 제출 완료 화면 -->
+      <section class="form-card success" id="success" role="status">
+        <div class="success-icon">✧</div>
+        <h2>참여가 완료되었습니다</h2>
+        <p>
+          메멘토 모리 갤러리 그림대회에<br>
+          참여해주셔서 감사합니다.
+        </p>
+      </section>
+    </div>
+
+  </main>
+
+  <script>
+    const artwork = document.getElementById("artwork");
+    const preview = document.getElementById("preview");
+    const previewWrap = document.getElementById("previewWrap");
+    const chooseFile = document.getElementById("chooseFile");
+    const removePreview = document.getElementById("removePreview");
+    const fileName = document.getElementById("fileName");
+    const form = document.getElementById("entryForm");
+    const success = document.getElementById("success");
+
+    let selectedFile = null;
+    let previewUrl = null;
+
+    // 파일 선택창 열기
+    chooseFile.addEventListener("click", () => {
+      artwork.click();
+    });
+
+    // 이미지 선택 및 미리보기
+    artwork.addEventListener("change", () => {
+      const file = artwork.files[0];
+
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        alert("이미지 파일을 선택해주세요.");
+        artwork.value = "";
+        return;
+      }
+
+      if (file.size > 15 * 1024 * 1024) {
+        alert("이미지 파일은 15MB 이하로 선택해주세요.");
+        artwork.value = "";
+        return;
+      }
+
+      selectedFile = file;
+      fileName.textContent = file.name;
+
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      previewUrl = URL.createObjectURL(file);
+      preview.src = previewUrl;
+      previewWrap.style.display = "block";
+    });
+
+    // 이미지 다시 선택
+    removePreview.addEventListener("click", () => {
+      artwork.value = "";
+      selectedFile = null;
+      fileName.textContent = "선택된 파일 없음";
+      previewWrap.style.display = "none";
+
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+      }
+
+      preview.removeAttribute("src");
+      artwork.click();
+    });
+
+    // 제출 완료 화면
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      if (!selectedFile) {
+        alert("작품 이미지를 선택해주세요.");
+        return;
+      }
+
+      /*
+        현재 코드는 디자인 확인용입니다.
+        실제 이미지와 입력 정보는 서버에 저장되지 않습니다.
+        실제 참가 접수를 받으려면 서버/API 연결이 필요합니다.
+      */
+
+      form.style.display = "none";
+      success.style.display = "flex";
+    });
+
+    // 페이지를 떠날 때 미리보기 메모리 정리
+    window.addEventListener("beforeunload", () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    });
+  </script>
+</body>
+</html>
